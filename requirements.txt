@@ -6,4 +6,4 @@ wordcloud
 nltk
 xgboost
 streamlit
-flask
+flaskll
