@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, send_file, render_template
 import re
 from io import BytesIO
+import logging
 
-# nltk.download('stopwords')
+#nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 import matplotlib.pyplot as plt
@@ -27,13 +28,19 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    logging.info("Entered predict method")
     # Select the predictor to be loaded from Models folder
     predictor = pickle.load(open(r"Models/model_xgb.pkl", "rb"))
+    logging.info("XGB model loaded")
     scaler = pickle.load(open(r"Models/scaler.pkl", "rb"))
+    logging.info("Scalar model loaded")
     cv = pickle.load(open(r"Models/countVectorizer.pkl", "rb"))
+    logging.info("cv model loaded")
+    logging.info("Model loaded")
     try:
         # Check if the request contains a file (for bulk prediction) or text input
         if "file" in request.files:
+            logging.info("processing files")
             # Bulk prediction from CSV file
             file = request.files["file"]
             data = pd.read_csv(file)
@@ -56,6 +63,7 @@ def predict():
             return response
 
         elif "text" in request.json:
+            logging.info("processing text")
             # Single string prediction
             text_input = request.json["text"]
             predicted_sentiment = single_prediction(predictor, scaler, cv, text_input)
@@ -67,6 +75,7 @@ def predict():
 
 
 def single_prediction(predictor, scaler, cv, text_input):
+
     corpus = []
     stemmer = PorterStemmer()
     review = re.sub("[^a-zA-Z]", " ", text_input)
@@ -144,4 +153,4 @@ def sentiment_mapping(x):
 
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(host='localhost', port=5000)
